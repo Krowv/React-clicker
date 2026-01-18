@@ -1,50 +1,100 @@
-import {useEffect, useState} from 'react'
+import {useEffect, useReducer} from 'react'
 import './App.css'
 
+const initialStates = {
+    count: 0,
+    incrementPerClick: 1,
+    incrementAuto: 0,
+    priceToUpgradeClick: 10,
+    priceToUpgradeAuto: 50
+}
+
 function App() {
-    const [count, setCount] = useState(0)
-    const [incrementPerClick, setIncrementPerClick] = useState(1)
-    const [incrementAuto, setIncrementAuto] = useState(0)
-    const [priceToUpdate, setPriceToUpdate] = useState(10)
-    const [priceToUpdateAuto, setPriceToUpdateAuto] = useState(50)
 
-    const handleIncrementationClick = () => {
-        setCount(count - priceToUpdate)
-        setIncrementPerClick(incrementPerClick + 1)
-        setPriceToUpdate(priceToUpdate * 10)
+    type State = {
+        count: number
+        incrementPerClick: number
+        incrementAuto: number
+        priceToUpgradeClick: number
+        priceToUpgradeAuto: number
     }
 
-    const handleIncrementationClickAuto = () => {
-        setCount(count - priceToUpdateAuto)
-        setIncrementAuto(incrementAuto + 1)
-        setPriceToUpdateAuto(Math.round(priceToUpdateAuto * 1.25))
+    type Action =
+        | { type: 'Increment' }
+        | { type: 'UpgradePointsPerClick'; price: number }
+        | { type: 'UpgradePointsAuto'; price: number }
+        | { type: 'AutoIncrement' }
+
+
+    const reducer = (state: State, action: Action): State => {
+        switch (action.type) {
+            case 'Increment':
+                return {
+                    ...state,
+                    count: state.count + state.incrementPerClick
+                }
+            case 'UpgradePointsPerClick':
+                return {
+                    ...state,
+                    count: state.count - action.price,
+                    incrementPerClick: state.incrementPerClick + 1,
+                    priceToUpgradeClick: Math.floor(state.priceToUpgradeClick * 1.25)
+                }
+            case 'UpgradePointsAuto':
+                return {
+                    ...state,
+                    count: state.count - action.price,
+                    incrementAuto: state.incrementAuto + 1,
+                    priceToUpgradeAuto: Math.floor(state.priceToUpgradeAuto * 1.25)
+                }
+            case 'AutoIncrement':
+                return {
+                    ...state,
+                    count: state.count + state.incrementAuto
+                }
+            default:
+                return state
+        }
     }
+
+    const [state, dispatch] = useReducer(reducer, initialStates)
 
     useEffect(() => {
-        const intervalId = setInterval(() => {
-            setCount(prev => prev + incrementAuto)
+        if (state.incrementAuto <= 0) return
+
+        const interval = setInterval(() => {
+            dispatch({
+                type: 'AutoIncrement',
+            })
         }, 1000)
 
-        return () => clearInterval(intervalId)
-    }, [incrementAuto])
+        return () => clearInterval(interval)
+    }, [state.incrementAuto])
 
     return (
         <>
           <div className="card">
-              <p>{count}</p>
-              <button onClick={() => setCount((count) => count + incrementPerClick)}>
+              <p>{state.count}</p>
+              <button onClick={() => dispatch({
+                  type: 'Increment'
+              })}>
                 Click to increment
               </button>
               <br/>
-              <button disabled={ count < priceToUpdate } onClick={handleIncrementationClick}>
-                Augment points/click
+              <button disabled={ state.count < state.priceToUpgradeClick } onClick={() => dispatch({
+                  type: 'UpgradePointsPerClick',
+                  price: state.priceToUpgradeClick
+              })}>
+                  Augment points/click
               </button>
-              <p>Cost {priceToUpdate}</p>
-              <br/>
-              <button disabled={ count < priceToUpdateAuto } onClick={handleIncrementationClickAuto}>
-                  Augment AutoClicker
+              <p>cost : {state.priceToUpgradeClick}</p>
+              <button disabled={ state.count < state.priceToUpgradeAuto } onClick={() => dispatch({
+                  type: 'UpgradePointsAuto',
+                  price: state.priceToUpgradeAuto
+              })}>
+                  Augment points Auto
               </button>
-              <p>Cost {priceToUpdateAuto}</p>
+              <p>cost : {state.priceToUpgradeAuto}</p>
 
           </div>
         </>
