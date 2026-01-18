@@ -1,8 +1,13 @@
 import {useEffect, useReducer} from "react";
-import {gameReducer, initialGameState} from "./gameReducer.ts";
+import {gameReducer, initialGameState} from "./gameReducer";
+//import {usePersistedReducer} from "../../hooks/usePersistReducer.ts";
 
 export const GameContainer = () => {
+    /* Uncomment for localStorage
+         const [state, dispatch] = usePersistedReducer(gameReducer, initialGameState, 'save');
+     */
     const [state, dispatch] = useReducer(gameReducer, initialGameState);
+
 
     useEffect(() => {
         if (state.incrementAuto <= 0) return;
@@ -12,7 +17,7 @@ export const GameContainer = () => {
         }, 1000)
 
         return () => clearInterval(interval)
-    }, [state.incrementAuto]);
+    }, [dispatch, state.incrementAuto]);
 
     return (
         <div className="card">

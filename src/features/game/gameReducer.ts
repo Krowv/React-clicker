@@ -1,4 +1,4 @@
-import type {GameState, GameAction} from "./gameTypes.ts";
+import type {GameState, GameAction} from "./gameTypes";
 
 export const initialGameState: GameState = {
     count: 0,
