@@ -1,4 +1,3 @@
-import './App.css'
 import {GameContainer} from "./features/game/gameContainer.tsx";
 
 
